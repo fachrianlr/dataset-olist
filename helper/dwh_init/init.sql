@@ -1,114 +1,112 @@
-drop table IF EXISTS "olist-dwh".public.fact_sales_analysis;
-drop table IF EXISTS "olist-dwh".public.fact_customer_feedback;
-drop table IF EXISTS "olist-dwh".public.fact_order_items;
-drop table IF EXISTS "olist-dwh".public.fact_order;
-drop table IF EXISTS "olist-dwh".public.dim_seller;
-drop table IF EXISTS "olist-dwh".public.dim_product;
-drop table IF EXISTS "olist-dwh".public.dim_customer;
-drop table IF EXISTS "olist-dwh".public.dim_date;
-
--- Dimension Table: dim_customer
-CREATE TABLE dim_customer
-(
-    customer_sk              UUID                     DEFAULT gen_random_uuid() PRIMARY KEY,
-    customer_id              VARCHAR(32) NOT NULL,                               -- Unique customer identifier
-    customer_unique_id       VARCHAR(100),                                       -- Unique ID assigned to customer
-    customer_zip_code_prefix VARCHAR(10),                                        -- Zip code prefix of the customer
-    customer_city            VARCHAR(100),                                       -- City where the customer resides
-    customer_state           VARCHAR(2),                                         -- State where the customer resides
-    created_at               TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Record creation date,
-    effective_start_date     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Start date for the record
-    effective_end_date       TIMESTAMP WITH TIME ZONE,                           -- End date for the record (null if current)
-    is_active                BOOLEAN                  DEFAULT TRUE               -- Flag to indicate if the record is current
+-- 1. Customers Table
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id VARCHAR(32) PRIMARY KEY,
+    customer_unique_id VARCHAR(32),
+    customer_zip_code_prefix INTEGER,
+    customer_city VARCHAR(100),
+    customer_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dimension Table: dim_product
-CREATE TABLE dim_product
-(
-    product_sk                 UUID                     DEFAULT gen_random_uuid() PRIMARY KEY,
-    product_id                 VARCHAR(32) NOT NULL,                               -- Unique product identifier
-    product_category_name      VARCHAR(100),                                       -- Category name of the product
-    product_name_length        INT,                                                -- Length of the product name
-    product_description_length INT,                                                -- Length of the product description
-    product_photos_qty         INT,                                                -- Number of photos for the product
-    product_weight_g           DECIMAL(10, 2),                                     -- Product weight in grams
-    product_length_cm          DECIMAL(10, 2),                                     -- Product length in cm
-    product_height_cm          DECIMAL(10, 2),                                     -- Product height in cm
-    product_width_cm           DECIMAL(10, 2),                                     -- Product width in cm
-    created_at                 TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Record creation date
-    effective_start_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Start date for the record
-    effective_end_date         TIMESTAMP WITH TIME ZONE,                           -- End date for the record (null if current)
-    is_active                  BOOLEAN                  DEFAULT TRUE               -- Flag to indicate if the record is current
+-- 2. Orders Table
+CREATE TABLE IF NOT EXISTS orders (
+    order_id VARCHAR(32) PRIMARY KEY,
+    customer_id VARCHAR(32) REFERENCES customers(customer_id),
+    order_status VARCHAR(20),
+    order_purchase_timestamp TIMESTAMP,
+    order_approved_at TIMESTAMP,
+    order_delivered_carrier_date TIMESTAMP,
+    order_delivered_customer_date TIMESTAMP,
+    order_estimated_delivery_date TIMESTAMP,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dimension Table: dim_seller
-CREATE TABLE dim_seller
-(
-    seller_sk              UUID                     DEFAULT gen_random_uuid() PRIMARY KEY,
-    seller_id              VARCHAR(32) NOT NULL,                               -- Unique seller identifier
-    seller_zip_code_prefix INTEGER,                                            -- Zip code prefix of the seller
-    seller_city            VARCHAR(100),                                       -- City where the seller is located
-    seller_state           VARCHAR(2),                                         -- State where the seller is located
-    created_at             TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Record creation date
-    effective_start_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Start date for the record
-    effective_end_date     TIMESTAMP WITH TIME ZONE,                           -- End date for the record (null if current)
-    is_active              BOOLEAN                  DEFAULT TRUE               -- Flag to indicate if the record is current
+-- 3. Sellers Table
+CREATE TABLE IF NOT EXISTS sellers (
+    seller_id VARCHAR(32) PRIMARY KEY,
+    seller_zip_code_prefix INTEGER,
+    seller_city VARCHAR(100),
+    seller_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Products Table
+CREATE TABLE IF NOT EXISTS products (
+    product_id VARCHAR(32) PRIMARY KEY,
+    product_category_name VARCHAR(100),
+    product_name_lenght INTEGER,
+    product_description_lenght INTEGER,
+    product_photos_qty INTEGER,
+    product_weight_g DECIMAL,
+    product_length_cm DECIMAL,
+    product_height_cm DECIMAL,
+    product_width_cm DECIMAL,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 
--- Fact Table: fact_order_processing
-CREATE TABLE fact_order
-(
-    order_sk                      UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Unique identifier for each fact order
-    order_id                      VARCHAR(32) NOT NULL,                       -- Reference to the order ID
-    customer_sk                   UUID        NOT NULL,                       -- Reference to the customer ID
-    order_status                  VARCHAR(20),                                -- Status of the order
-    order_approved_at             TIMESTAMP WITH TIME ZONE,
-    order_purchase_timestamp      TIMESTAMP WITH TIME ZONE,                   -- Purchase date of the order
-    order_delivered_carrier_date  TIMESTAMP WITH TIME ZONE,
-    order_delivered_customer_date TIMESTAMP WITH TIME ZONE,                   -- Delivery date to the customer
-    order_estimated_delivery_date TIMESTAMP WITH TIME ZONE,                   -- Estimated delivery date
-    FOREIGN KEY (customer_sk) REFERENCES dim_customer (customer_sk)           -- Foreign key reference to dim_customer
-
+-- 5. Order Items Table
+CREATE TABLE IF NOT EXISTS order_items (
+    order_id VARCHAR(32) REFERENCES orders(order_id),
+    order_item_id INTEGER,
+    product_id VARCHAR(32) REFERENCES products(product_id),
+    seller_id VARCHAR(32) REFERENCES sellers(seller_id),
+    shipping_limit_date TIMESTAMP,
+    price DECIMAL,
+    freight_value DECIMAL,
+    PRIMARY KEY (order_id, order_item_id),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Fact Table: fact_order_processing_items
-create table fact_order_items
-(
-    order_item_sk       UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    order_sk            UUID    not null,
-    order_item_id       integer not null,
-    product_sk          UUID,
-    seller_sk           UUID,
-    shipping_limit_date TIMESTAMP WITH TIME ZONE,
-    price               numeric,
-    freight_value       numeric,
-    FOREIGN KEY (order_sk) REFERENCES fact_order (order_sk),
-    FOREIGN KEY (product_sk) REFERENCES dim_product (product_sk),
-    FOREIGN KEY (seller_sk) REFERENCES dim_seller (seller_sk)
+-- 6. Order Payments Table
+CREATE TABLE IF NOT EXISTS order_payments (
+    order_id VARCHAR(32) REFERENCES orders(order_id),
+    payment_sequential INTEGER,
+    payment_type VARCHAR(20),
+    payment_installments INTEGER,
+    payment_value DECIMAL,
+    PRIMARY KEY (order_id, payment_sequential),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 
--- Fact Table: fact_customer_feedback
-CREATE TABLE fact_customer_feedback
-(
-    review_sk              UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Unique identifier for each feedback
-    review_id              VARCHAR(32) NOT NULL,                       -- Reference to the review ID
-    order_sk               UUID        NOT NULL,                       -- Reference to the order ID
-    review_score           INTEGER,                                    -- Score given by the customer
-    review_comment_title   TEXT,                                       -- Title of the review
-    review_comment_message TEXT,                                       -- Detailed feedback from the customer
-    review_creation_date   DATE                                        -- Creation date of the review
+-- 7. Order Reviews Table
+CREATE TABLE IF NOT EXISTS order_reviews (
+    review_id VARCHAR(32),
+    order_id VARCHAR(32) REFERENCES orders(order_id),
+    review_score INTEGER,
+    review_comment_title TEXT,
+    review_comment_message TEXT,
+    review_creation_date TIMESTAMP,
+    review_answer_timestamp TIMESTAMP,
+    PRIMARY KEY (review_id, order_id),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Fact Table: fact_sales_analysis
-CREATE TABLE fact_sales_analysis
-(
-    sales_sk       UUID DEFAULT gen_random_uuid() PRIMARY KEY,   -- Unique identifier for each sales analysis record
-    product_sk     UUID NOT NULL,                                -- Reference to the product ID
-    order_date     DATE NOT NULL,                                -- Date of the order
-    total_sales    NUMERIC,                                      -- Total sales for the product on the given date
-    total_quantity INTEGER,                                      -- Total quantity sold
-    FOREIGN KEY (product_sk) REFERENCES dim_product (product_sk) -- Foreign key reference to dim_product
+
+-- 8. Geolocation Table
+CREATE TABLE IF NOT EXISTS geolocation (
+    geolocation_zip_code_prefix INTEGER,
+    geolocation_lat DECIMAL,
+    geolocation_lng DECIMAL,
+    geolocation_city VARCHAR(100),
+    geolocation_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+
+-- 9. Product Category Translation Table
+CREATE TABLE IF NOT EXISTS product_category_name_translation (
+    product_category_name VARCHAR(100) PRIMARY KEY,
+    product_category_name_english VARCHAR(100),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
