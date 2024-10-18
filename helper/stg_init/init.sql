@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS customers (
     customer_unique_id VARCHAR(32),
     customer_zip_code_prefix INTEGER,
     customer_city VARCHAR(100),
-    customer_state VARCHAR(2)
+    customer_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 2. Orders Table
@@ -16,7 +18,9 @@ CREATE TABLE IF NOT EXISTS orders (
     order_approved_at TIMESTAMP,
     order_delivered_carrier_date TIMESTAMP,
     order_delivered_customer_date TIMESTAMP,
-    order_estimated_delivery_date TIMESTAMP
+    order_estimated_delivery_date TIMESTAMP,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. Sellers Table
@@ -24,7 +28,9 @@ CREATE TABLE IF NOT EXISTS sellers (
     seller_id VARCHAR(32) PRIMARY KEY,
     seller_zip_code_prefix INTEGER,
     seller_city VARCHAR(100),
-    seller_state VARCHAR(2)
+    seller_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Products Table
@@ -37,7 +43,9 @@ CREATE TABLE IF NOT EXISTS products (
     product_weight_g DECIMAL,
     product_length_cm DECIMAL,
     product_height_cm DECIMAL,
-    product_width_cm DECIMAL
+    product_width_cm DECIMAL,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -50,6 +58,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     shipping_limit_date TIMESTAMP,
     price DECIMAL,
     freight_value DECIMAL,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (order_id, order_item_id)
 );
 
@@ -60,6 +70,8 @@ CREATE TABLE IF NOT EXISTS order_payments (
     payment_type VARCHAR(20),
     payment_installments INTEGER,
     payment_value DECIMAL,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (order_id, payment_sequential)
 );
 
@@ -73,6 +85,8 @@ CREATE TABLE IF NOT EXISTS order_reviews (
     review_comment_message TEXT,
     review_creation_date TIMESTAMP,
     review_answer_timestamp TIMESTAMP,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (review_id, order_id)
 );
 
@@ -83,12 +97,16 @@ CREATE TABLE IF NOT EXISTS geolocation (
     geolocation_lat DECIMAL,
     geolocation_lng DECIMAL,
     geolocation_city VARCHAR(100),
-    geolocation_state VARCHAR(2)
+    geolocation_state VARCHAR(2),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 
 -- 9. Product Category Translation Table
 CREATE TABLE IF NOT EXISTS product_category_name_translation (
     product_category_name VARCHAR(100) PRIMARY KEY,
-    product_category_name_english VARCHAR(100)
+    product_category_name_english VARCHAR(100),
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
