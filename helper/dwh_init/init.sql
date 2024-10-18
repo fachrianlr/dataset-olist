@@ -104,6 +104,7 @@ CREATE TABLE fact_customer_feedback
     review_score           INTEGER,                                    -- Score given by the customer
     review_comment_title   TEXT,                                       -- Title of the review
     review_comment_message TEXT,                                       -- Detailed feedback from the customer
+    review_creation_date TIMESTAMP,
     created_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     writed_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
