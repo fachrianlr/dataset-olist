@@ -29,13 +29,13 @@ CREATE TABLE dim_product
     product_sk                 UUID                     DEFAULT gen_random_uuid() PRIMARY KEY,
     product_id                 VARCHAR(32) NOT NULL,                               -- Unique product identifier
     product_category_name      VARCHAR(100),                                       -- Category name of the product
-    product_name_length        INT,                                                -- Length of the product name
-    product_description_length INT,                                                -- Length of the product description
-    product_photos_qty         INT,                                                -- Number of photos for the product
-    product_weight_g           DECIMAL(10, 2),                                     -- Product weight in grams
-    product_length_cm          DECIMAL(10, 2),                                     -- Product length in cm
-    product_height_cm          DECIMAL(10, 2),                                     -- Product height in cm
-    product_width_cm           DECIMAL(10, 2),                                     -- Product width in cm
+    product_name_length        INTEGER,                                                -- Length of the product name
+    product_description_length INTEGER,                                                -- Length of the product description
+    product_photos_qty         INTEGER,                                                -- Number of photos for the product
+    product_weight_g           DECIMAL,                                     -- Product weight in grams
+    product_length_cm          DECIMAL,                                     -- Product length in cm
+    product_height_cm          DECIMAL,                                     -- Product height in cm
+    product_width_cm           DECIMAL,                                     -- Product width in cm
     effective_start_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Start date for the record
     effective_end_date         TIMESTAMP WITH TIME ZONE,                           -- End date for the record (null if current)
     is_active                  BOOLEAN                  DEFAULT TRUE,              -- Flag to indicate if the record is current
